@@ -1,85 +1,52 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxOpenCv.h"
 #include "ofxCv.h"
+#include "ofxOpenCv.h"
 #include "ofxGui.h"
-#include "ofEvents.h"
 #include "ofxKinectV2.h"
+#include "ofEvents.h"
 
 
 
-class ofApp : public ofBaseApp{
-    
+class ofApp : public ofBaseApp {
 public:
     void setup();
     void update();
     void draw();
-    
-    void keyPressed  (int key);
-    void keyReleased(int key);
-    void mouseMoved(int x, int y );
-    void mouseDragged(int x, int y, int button);
+    void drawOutputContours();
     void mousePressed(int x, int y, int button);
-    void mouseReleased(int x, int y, int button);
-    void windowResized(int w, int h);
     
-    int wWidth;
-    int wHeight;
-    
-    int hue, sat, val;
-    bool drawEnabled;
-    
-    ofVideoGrabber		wCam;
-//    ofVideoPlayer       myPlayer;
+    ofVideoGrabber cam;
+    ofxCv::ContourFinder contourFinder;
+    ofColor targetColor;
     ofxCvColorImage		origOutput;
-    ofxCvColorImage		origOutputHSV;
     
-    ofxCvGrayscaleImage hueOutput;
-    ofxCvGrayscaleImage satOutput;
-    ofxCvGrayscaleImage briOutput;
     
-    unsigned char *		lockedOnPixels;
-    ofTexture			lockedOnTexture;
+    ofxPanel gui;
+    ofParameter<float> threshold;
+    ofParameter<bool> trackHs;
     
-    ofxCvGrayscaleImage	lockedOutput;
-    ofxCvContourFinder	lockedContours;
     
+    //KINECT ----------|=====|-------------
+    vector < shared_ptr<ofxKinectV2> > kinects;
+    vector <ofTexture> texDepth;
+    vector <ofTexture> texRGB;
+    
+    //Kalman Filter - To improve tracking of ball even when obscured.
     ofxCv::KalmanPosition kalman;
-    
     ofMesh predicted, line, estimated;
     ofVec2f point;
-    
-    //
+    ofPolyline velVector;
     float speed;
-    
-    
-    //GUI ----------------------------
-    ofxPanel gui;
-
-    ofxIntSlider lowHue;
-    ofxIntSlider highHue;
-    ofxIntSlider lowSat;
-    ofxIntSlider highSat;
-    
-    ofxFloatSlider rapidness;
-    ofxFloatSlider smoothness;
     
     
     //Serial Comms
     ofArduino	ard;
     bool		bSetupArduino;			// flag variable for setting up arduino once
-
-    
-    //KINECT ____ _ _ _ _ _ _ ) )_) _) _) _) _)
-    
-    vector < shared_ptr<ofxKinectV2> > kinects;
-    
-    vector <ofTexture> texDepth;
-    vector <ofTexture> texRGB;
     
 private:
-    
+    //Serial Comms
     void setupArduino(const int & version);
     void digitalPinChanged(const int & pinNum);
     void analogPinChanged(const int & pinNum);
@@ -89,7 +56,4 @@ private:
     string potValue;
     
     
-    
-//    unsigned char *		scribblePixels;
-//    ofTexture			scribbleOutput;
 };

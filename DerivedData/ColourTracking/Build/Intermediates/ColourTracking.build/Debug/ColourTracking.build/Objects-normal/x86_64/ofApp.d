@@ -551,23 +551,52 @@ dependencies: \
   ../../../libs/openFrameworks/video/ofAVFoundationPlayer.h \
   ../../../libs/openFrameworks/3d/ofCamera.h \
   ../../../libs/openFrameworks/3d/ofEasyCam.h \
-  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxOpenCv/src/ofxOpenCv.h \
-  ../../../addons/ofxOpenCv/src/ofxCvConstants.h \
-  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColorTracking/../../../addons/ofxOpenCv/libs/opencv/include/opencv/cv.h \
+  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColorTracking/../../../addons/ofxCv/src/ofxCv.h \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/opencv.hpp \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/core_c.h \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/types_c.h \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/core.hpp \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/version.hpp \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/operations.hpp \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/mat.hpp \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc/imgproc_c.h \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc/types_c.h \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc/imgproc.hpp \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/video/tracking.hpp \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/features2d/features2d.hpp \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/miniflann.hpp \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/defines.h \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/config.h \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc/imgproc_c.h \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc/types_c.h \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc/imgproc.hpp \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/photo/photo.hpp \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/photo/photo_c.h \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/video/video.hpp \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/video/tracking.hpp \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/video/background_segm.hpp \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/features2d/features2d.hpp \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/objdetect/objdetect.hpp \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/calib3d/calib3d.hpp \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/ml/ml.hpp \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/highgui/highgui_c.h \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/highgui/highgui.hpp \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/contrib/contrib.hpp \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/contrib/retina.hpp \
+  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/contrib/openfabmap.hpp \
+  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Utilities.h \
+  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Wrappers.h \
+  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColorTracking/../../../addons/ofxCv/libs/CLD/include/CLD/imatrix.h \
+  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColorTracking/../../../addons/ofxCv/libs/CLD/include/CLD/ETF.h \
+  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColorTracking/../../../addons/ofxCv/libs/CLD/include/CLD/fdog.h \
+  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColorTracking/../../../addons/ofxCv/libs/CLD/include/CLD/myvec.h \
+  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Helpers.h \
+  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Distance.h \
+  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Calibration.h \
+  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Tracker.h \
+  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/ContourFinder.h \
+  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/RunningBackground.h \
+  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Flow.h \
+  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/ObjectFinder.h \
+  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Kalman.h \
+  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxOpenCv/src/ofxOpenCv.h \
+  ../../../addons/ofxOpenCv/src/ofxCvConstants.h \
+  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColorTracking/../../../addons/ofxOpenCv/libs/opencv/include/opencv/cv.h \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/flann.hpp \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/flann_base.hpp \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/general.h \
@@ -597,8 +626,6 @@ dependencies: \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/index_testing.h \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/timer.h \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/sampling.h \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/calib3d/calib3d.hpp \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/objdetect/objdetect.hpp \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/legacy/compat.hpp \
   ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/internal.hpp \
   ../../../addons/ofxOpenCv/src/ofxCvImage.h \
@@ -609,33 +636,6 @@ dependencies: \
   ../../../addons/ofxOpenCv/src/ofxCvShortImage.h \
   ../../../addons/ofxOpenCv/src/ofxCvContourFinder.h \
   ../../../addons/ofxOpenCv/src/ofxCvHaarFinder.h \
-  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColorTracking/../../../addons/ofxCv/src/ofxCv.h \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/opencv.hpp \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/photo/photo.hpp \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/photo/photo_c.h \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/video/video.hpp \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/video/background_segm.hpp \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/ml/ml.hpp \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/highgui/highgui_c.h \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/highgui/highgui.hpp \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/contrib/contrib.hpp \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/contrib/retina.hpp \
-  ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/contrib/openfabmap.hpp \
-  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Utilities.h \
-  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Wrappers.h \
-  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColorTracking/../../../addons/ofxCv/libs/CLD/include/CLD/imatrix.h \
-  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColorTracking/../../../addons/ofxCv/libs/CLD/include/CLD/ETF.h \
-  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColorTracking/../../../addons/ofxCv/libs/CLD/include/CLD/fdog.h \
-  /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColorTracking/../../../addons/ofxCv/libs/CLD/include/CLD/myvec.h \
-  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Helpers.h \
-  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Distance.h \
-  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Calibration.h \
-  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Tracker.h \
-  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/ContourFinder.h \
-  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/RunningBackground.h \
-  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Flow.h \
-  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/ObjectFinder.h \
-  ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Kalman.h \
   /Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxGui/src/ofxGui.h \
   ../../../addons/ofxGui/src/ofxToggle.h \
   ../../../addons/ofxGui/src/ofxBaseGui.h \

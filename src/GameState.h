@@ -12,10 +12,7 @@
 class GameState {
     
 private:
-    int xBuff [2];
-    int yBuff [2];
-    
-    
+
     
     
     

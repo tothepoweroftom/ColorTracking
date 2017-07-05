@@ -1,51 +1,20 @@
 #include "ofApp.h"
 
+using namespace ofxCv;
+using namespace cv;
 
-
-
-//--------------------------------------------------------------
-
-//------ - - - - - - - - - -Simple Color Tracker - - - - - - - - - - - - - - - - -?
-void ofApp::setup(){
+void ofApp::setup() {
+    // listen for EInitialized notification. this indicates that
+    // the arduino is ready to receive commands and it is safe to
+    // call setupArduino()
+    ofAddListener(ard.EInitialized, this, &ofApp::setupArduino);
+    bSetupArduino	= false;
     
-    ofSetVerticalSync(true);
+    //Color Contour Finder ==-=-=-=-==(){}[]=-=--=-==
+    contourFinder.setMinAreaRadius(10);
+    contourFinder.setMaxAreaRadius(350);
     
-    ///GUI SETUP
-    
-    gui.setup();
-    
-    gui.add(lowHue.setup("lowHue", 32, 0, 360));
-    gui.add(highHue.setup("highHue", 82, 0, 360));
-    gui.add(lowSat.setup("lowSat", 100, 0, 360));
-    gui.add(highSat.setup("highSat", 20, 0, 360));
-    gui.add(rapidness.setup("Rapidness", 0.1, 0.000001, 1.0));
-    gui.add(smoothness.setup("smoothness", 0.1, 0.000001, 1.0));
-
-
-    kalman.init(1/10000., 1/100.); // inverse of (smoothness, rapidness)
-    
-    line.setMode(OF_PRIMITIVE_LINE_STRIP);
-    predicted.setMode(OF_PRIMITIVE_LINE_STRIP);
-    estimated.setMode(OF_PRIMITIVE_LINE_STRIP);
-    
-    speed = 0.f;
-//    myPlayer.load("/Users/tom.power/Documents/of_v0.9.8_osx_release/addons/ofxCv/ColourTracking/sample.mov");
-//    wCam.initGrabber(wWidth, wHeight);
-    
-
-
-    hue = 0;
-    sat = 0;
-    val = 0;
-    
-    drawEnabled = true;
-    
-    
-    //Video Grabber from webcam
-//    wCam.initGrabber(wWidth, wHeight);
-    
-    
-    //KINECT INSTEAD ----
+    //KINECT Setup
     //see how many devices we have.
     ofxKinectV2 tmp;
     vector <ofxKinectV2::KinectDeviceInfo> deviceList = tmp.getDeviceList();
@@ -59,47 +28,120 @@ void ofApp::setup(){
         kinects[d] = shared_ptr <ofxKinectV2> (new ofxKinectV2());
         kinects[d]->open(deviceList[d].serial);
     }
-
-//    myPlayer.play();
-    wWidth  = 1920;
-    wHeight = 1080;
-    
-
-
-    //Allocate memory for outputs
-    origOutput.allocate(wWidth, wHeight);
-    origOutputHSV.allocate(wWidth, wHeight);
-    
-    hueOutput.allocate(wWidth, wHeight);
-    satOutput.allocate(wWidth, wHeight);
-    briOutput.allocate(wWidth, wHeight);
     
     
-    //Tracked pixels
-    lockedOnPixels = new unsigned char [wWidth * wHeight];
-    lockedOnTexture.allocate(wWidth, wHeight, GL_LUMINANCE);
-    lockedOutput.allocate(wWidth, wHeight);
+    
+    //KALMAN-IA -------------------> <-------------------------------
+    kalman.init(1/10000., 1/100.); // inverse of (smoothness, rapidness)
+    
+    line.setMode(OF_PRIMITIVE_LINE_STRIP);
+    predicted.setMode(OF_PRIMITIVE_LINE_STRIP);
+    estimated.setMode(OF_PRIMITIVE_LINE_STRIP);
+    
+    speed = 0.f;
     
     
-    //SERIAL COMMS -----------------------==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-_=-+_+_+_+_+_==_++_
-    
-    // replace the string below with the serial port for your Arduino board
-    // you can get this from the Arduino application or via command line
-    // for OSX, in your terminal type "ls /dev/tty.*" to get a list of serial devices
+    //ARDUINO =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     ard.connect("/dev/tty.usbmodem1411", 57600);
     
-    // listen for EInitialized notification. this indicates that
-    // the arduino is ready to receive commands and it is safe to
-    // call setupArduino()
-    ofAddListener(ard.EInitialized, this, &ofApp::setupArduino);
-    bSetupArduino	= false;	// flag so we setup arduino when its ready, you don't need to touch this :)
     
+    
+    gui.setup();
+    gui.add(threshold.set("Threshold", 30, 0, 255));
+}
 
+void ofApp::update() {
+    updateArduino();
+    kinects[0]->update();
+    
+    if( kinects[0]->isFrameNew() ){
+        texRGB[0].loadData( kinects[0]->getRgbPixels() );
+        ofPixels kinectPix = kinects[0]->getRgbPixels();
+        origOutput.setFromPixels(kinectPix);
+        contourFinder.setTargetColor(targetColor,TRACK_COLOR_HSV);
+        contourFinder.setThreshold(threshold);
+        contourFinder.findContours(kinectPix);
+        
+        if (contourFinder.size()>0) {
+            ofVec2f curPoint(contourFinder.getCentroid(0).x, contourFinder.getCentroid(0).y);
+            line.addVertex(curPoint);
+            
+            kalman.update(curPoint); // feed measurement
+            
+            point = kalman.getPrediction(); // prediction before measurement
+            int a = static_cast<int>(ofMap(point.y, 0.0, 1080.0, 0.0, 180.0));
+            // rotate servo head to 180 degrees
+            int ini = ofGetElapsedTimeMicros();
+            //                cout << "ini:" << ofGetElapsedTimeMicros() << endl;
+            ard.sendServo(9, a, false);
+            
+            if(ofGetElapsedTimeMicros() - ini > 100) {
+                cout << "duration:" << (ofGetElapsedTimeMicros() - ini) << endl;
+                
+            }
+            ard.sendDigital(18, ARD_HIGH);  // pin 20 if using StandardFirmata from Arduino 0022 or older
+            
+            predicted.addVertex(point);
+            estimated.addVertex(kalman.getEstimation()); // corrected estimation after measurement
+            ofVec3f vel = kalman.getVelocity();
+            speed = vel.length();
+            
+            velVector.addVertex(vel.x, vel.y);
+            int alpha = ofMap(speed, 0, 20, 50, 255, true);
+            line.addColor(ofColor(255, 255, 255, alpha));
+            predicted.addColor(ofColor(255, 0, 0, alpha));
+            estimated.addColor(ofColor(0, 255, 255, alpha));
+        }
+    }
+}
 
+void ofApp::draw() {
+    drawOutputContours();
+    gui.draw();
+}
+
+void ofApp::mousePressed(int x, int y, int button) {
+    targetColor = kinects[0]->getRgbPixels().getColor(x, y);
 }
 
 
-//- --- -- --- --- - -  - -- -- -- -- -- -- - - ARDUINO ---------------------------------
+void ofApp::drawOutputContours() {
+    origOutput.draw(0,0, 1920, 1080);
+    ofSetLineWidth(2);
+    
+    ofPushStyle();
+    ofSetColor(ofColor::red, 128);
+    ofFill();
+    estimated.draw();
+    if(estimated.getNumVertices()> 5){
+        estimated.removeVertex(0);
+    }
+    ofPopStyle();
+    
+    
+    ofPushStyle();
+    ofSetColor(255, 0, 0);
+    ofFill();
+    contourFinder.draw();
+    ofPopStyle();
+}
+
+
+
+//ARDUINO |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||/|||~~*~~~*~~|||\||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
+//        |||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~||||||~~*~~~*~~|||
 void ofApp::setupArduino(const int & version) {
     
     // remove listener because we don't need it anymore
@@ -141,7 +183,7 @@ void ofApp::setupArduino(const int & version) {
     ofAddListener(ard.EAnalogPinChanged, this, &ofApp::analogPinChanged);
 }
 
-//--------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------
 void ofApp::updateArduino(){
     
     // update the arduino, get any data or messages.
@@ -174,168 +216,4 @@ void ofApp::analogPinChanged(const int & pinNum) {
     // do something with the analog input. here we're simply going to print the pin number and
     // value to the screen each time it changes
     potValue = "analog pin: " + ofToString(pinNum) + " = " + ofToString(ard.getAnalog(pinNum));
-}
-
-
-
-//--------------------------------------------------------------
-void ofApp::update(){
-    updateArduino();
-
-        kinects[0]->update();
-        if( kinects[0]->isFrameNew() ){
-//            texDepth[d].loadData( kinects[d]->getDepthPixels() );
-            texRGB[0].loadData( kinects[0]->getRgbPixels() );
-            ofPixels kinectPix = kinects[0]->getRgbPixels();
-            ofLog(OF_LOG_NOTICE, "Size" + ofToString(kinectPix.getWidth()));
-
-            origOutput.setFromPixels(kinectPix);
-            
-            origOutputHSV = origOutput;
-            origOutputHSV.convertRgbToHsv();
-            
-            origOutputHSV.convertToGrayscalePlanarImages(hueOutput, satOutput, briOutput);
-            
-            hueOutput.flagImageChanged();
-            satOutput.flagImageChanged();
-            briOutput.flagImageChanged();
-            
-            ofPixels huePixels = hueOutput.getPixels();
-            ofPixels satPixels = satOutput.getPixels();
-            ofPixels briPixels = briOutput.getPixels();
-            
-            //This is a flat array of the pixel values that we iterate through. Set to white the pixels that are there.
-            for (int i = 0; i < (wWidth * wHeight); i++) {
-                if ((huePixels[i] >= lowHue  && huePixels[i] <= highHue) &&
-                    (satPixels[i] >= lowSat)) {
-                    lockedOnPixels[i] = 255;
-                } else {
-                    lockedOnPixels[i] = 0;
-                }
-            }
-            
-            lockedOnTexture.loadData(lockedOnPixels, wWidth, wHeight, GL_LUMINANCE);
-            lockedOutput.setFromPixels(lockedOnPixels, wWidth, wHeight);
-            
-            lockedContours.findContours(lockedOutput, 160, (wWidth * wHeight) / 3, 1, false, true);
-            
-            
-            if (lockedContours.blobs.size() > 0) {
-                
-                ofVec2f curPoint(lockedContours.blobs.at(0).centroid.x, lockedContours.blobs.at(0).centroid.y);
-                line.addVertex(curPoint);
-                
-                
-                kalman.update(curPoint); // feed measurement
-                
-                point = kalman.getPrediction(); // prediction before measurement
-                int a = static_cast<int>(ofMap(point.x, 0.0, 1920.0, 0.0, 180.0));
-                // rotate servo head to 180 degrees
-                ard.sendServo(9, a, false);
-                ard.sendDigital(18, ARD_HIGH);  // pin 20 if using StandardFirmata from Arduino 0022 or older
-                
-                predicted.addVertex(point);
-                estimated.addVertex(kalman.getEstimation()); // corrected estimation after measurement
-                ofVec3f vel = kalman.getVelocity();
-                speed = vel.length();
-                int alpha = ofMap(speed, 0, 20, 50, 255, true);
-                line.addColor(ofColor(255, 255, 255, alpha));
-                predicted.addColor(ofColor(255, 0, 0, alpha));
-                estimated.addColor(ofColor(0, 255, 255, alpha));
-            }
-            
-            
-            
-            
-        }
-}
-
-    
-//    wCam.update(); // get all the new frames
-//    if (wCam.isFrameNew()) {
-//
-//        
-//    }
-
-
-//--------------------------------------------------------------
-void ofApp::draw(){
-    ofBackground(100, 100, 100);
-//    ofSetColor(0xffffff);
-    
-    texRGB[0].draw(0,0, wWidth, wHeight );
-//    origOutputHSV.draw(360, 0, wWidth/4, wHeight/4);
-    lockedContours.draw();
-//
-//    lockedOnTexture.draw(200, 380, wWidth/4, wHeight/4);
-//    
-    
-    char tmpStr[255];
-    sprintf(tmpStr, "h: %i\ns: %i\nv: %i", hue, sat, val);
-    ofDrawBitmapString(tmpStr, 20, 260);
-    
-//    line.draw();
-    
-    predicted.draw();
-    ofPushStyle();
-//    ofSetColor(ofColor::red, 128);
-    ofFill();
-    ofDrawCircle(point, speed * 2);
-    ofPopStyle();
-    
-    estimated.draw();
-    gui.draw();
-
-}
-
-void ofApp::keyPressed  (int key){
-    switch (key) {
-        case OF_KEY_RIGHT:
-            // rotate servo head to 180 degrees
-            ard.sendServo(9, 18, false);
-            ard.sendDigital(18, ARD_HIGH);  // pin 20 if using StandardFirmata from Arduino 0022 or older
-            break;
-        case OF_KEY_LEFT:
-            // rotate servo head to 0 degrees
-            ard.sendServo(9, 0, false);
-            ard.sendDigital(18, ARD_LOW);  // pin 20 if using StandardFirmata from Arduino 0022 or older
-            break;
-        default:
-            break;
-    }
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-    ofPixels huePixels = hueOutput.getPixels();
-    ofPixels satPixels = satOutput.getPixels();
-    ofPixels briPixels = briOutput.getPixels();
-    
-    hue = huePixels[x + (y * hueOutput.width)];
-    sat = satPixels[x + (y * satOutput.width)];
-    val = briPixels[x + (y * briOutput.width)];
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-    
 }
